@@ -1,0 +1,24 @@
+{
+  "name": "beep-blep",
+  "version": "1.0.0",
+  "description": "PCMR mod log backerupper",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheAppleFreak/beep-blep.git"
+  },
+  "author": "TheAppleFreak",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/TheAppleFreak/beep-blep/issues"
+  },
+  "homepage": "https://github.com/TheAppleFreak/beep-blep#readme",
+  "dependencies": {
+    "lodash": "^4.13.1",
+    "moment": "^2.14.1",
+    "snoocore": "^3.3.1"
+  }
+}
