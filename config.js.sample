@@ -1,0 +1,9 @@
+module.exports = {
+	key: "APP_KEY_GOES_HERE",
+	secret: "APP_SECRET_GOES_HERE",
+	redirectUri: "REDIRECT_URI_GOES_HERE",
+	username: "REDDIT_BOT_USERNAME_GOES_HERE",
+	password: "REDDIT_BOT_PASSWORD_GOES_HERE",
+	watchSub: "SUBREDDIT_TO_LOG",
+	logSub: "LOG_SUBREDDIT"
+};
