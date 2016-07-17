@@ -1,19 +1,14 @@
+var fs = require("fs");
 var _ = require("lodash");
 var Snoocore = require("snoocore");
 var moment = require("moment");
-var Config = require("./config.js");
+var Handlebars = require("handlebars");
 
-String.prototype.format = String.prototype.f = function() {
-	var s = this,
-	i = arguments.length;
-	while (i--) {
-		if (arguments[i] == null) arguments[i] = "null";
-		s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
-	}
-	return s;
-};
+var Config = require("./config.json");
+var templates = require("./templates/templates.json");
+
 var reddit = new Snoocore({
-	userAgent: "Mod log backer upper script v0.1, by /u/TheAppleFreak",
+	userAgent: "(PCMRBot Beta) Mod log backer upper script v0.2, by /u/TheAppleFreak",
 	oauth: {
 		type: "script",
 		key: Config.key,
@@ -25,25 +20,14 @@ var reddit = new Snoocore({
 	}
 });
 
-/*
-0 - Mod username
-1 - Action type
-2 - Time of action
-3 - Post title
-4 - Permalink
-5 - Post type
-6 - Poster username
-7 - Post body
-*/
+for (var action in templates.actions) {
+	templates.actions[action].post = Handlebars.compile(fs.readFileSync(__dirname + "/templates/" + action + ".hbs", "utf8"));
+	templates.actions[action].title = Handlebars.compile(templates.actions[action].title);
+}
 
-var titleString = "{0} {1} {2} by /u/{3}"
-
-var actionString = "**Moderator**: /u/{0}  \n\
-**Action**: {1}  \n\
-**Time**: {2}\n\n\
----\n\n\
-# [{3}]({4}) ({5}) - /u/{6}\n\n\
-{7}";
+for (var action in templates.logs) {
+	templates.logs[action] = Handlebars.compile(templates.logs[action]);
+}
 
 var latest = {
 	created_utc: null,
@@ -51,58 +35,70 @@ var latest = {
 };
 
 checkModlog();
-setInterval(checkModlog, 60000);
+setInterval(checkModlog, Config.checkInterval * 1000);
 
 function checkModlog(){
-return reddit("/r/{0}/about/log".f(Config.watchSub)).listing({before: latest.id}).then(function(slice){
-	if(latest.created_utc != null) {
-		console.log("\nChecked for new mod actions; found {0} new actions since {1}".f(slice.children.length, latest.created_utc.format("dddd, MMMM Do YYYY, h:mm:ss a")));
-	} else {
-		latest.created_utc = moment(slice.children[0].data.created_utc * 1000).utc();
-		latest.id = slice.children[0].data.id;
-		console.log("\nChecked for mod actions starting at {0} onwards".f(latest.created_utc.format("dddd, MMMM Do YYYY, h:mm:ss a")));
+	return reddit("/r/" + Config.watchSub + "/about/log").listing({before: latest.id}).then(function(slice){
+		if(latest.created_utc != null) {
+			console.log(templates.logs.check({
+				actionsSince: slice.children.length,
+				lastActionTime: latest.created_utc.format("dddd, MMMM Do YYYY, h:mm:ss a")
+			}));
+		} else {
+			latest.created_utc = moment(slice.children[0].data.created_utc * 1000).utc();
+			latest.id = slice.children[0].data.id;
+			console.log(templates.logs.init({
+				lastActionTime: latest.created_utc.format("dddd, MMMM Do YYYY, h:mm:ss a")
+			}));
 
-		return true;
-	}
+			return true;
+		}
 
-	slice.children.forEach(function(action){
-		if (latest.created_utc != null) {
-			if (latest.created_utc < moment(action.data.created_utc * 1000).utc()) {
+		slice.children.forEach(function(action){
+			if (latest.created_utc != null) {
+				if (latest.created_utc < moment(action.data.created_utc * 1000).utc()) {
+					latest.created_utc = moment(action.data.created_utc * 1000).utc();
+					latest.id = action.data.id;
+				}
+			} else {
 				latest.created_utc = moment(action.data.created_utc * 1000).utc();
 				latest.id = action.data.id;
 			}
-		} else {
-			latest.created_utc = moment(action.data.created_utc * 1000).utc();
-			latest.id = action.data.id;
-		}
-		
-		var selfPost = actionString.f(
-				action.data.mod,
-				action.data.action,
-				moment().utc(action.data.created_utc * 1000).format("dddd, MMMM Do YYYY, h:mm:ss a"),
-				action.data.target_title,
-				action.data.target_permalink,
-				_.startsWith(action.data.target_fullname, "t1") ? "comment" : "submission",
-				action.data.target_author,
-				action.data.target_body
-			);
-		var title = titleString.f(
-				action.data.mod,
-				action.data.action,
-				_.startsWith(action.data.target_fullname, "t1") ? "comment" : "submission",
-				action.data.target_author
-			);
-		
-		return reddit("/api/submit").post({
-			kind: "self", 
-			sr: Config.logSub,
-			text: selfPost,
-			title: title
-		}).then(function(){
-			console.log("Made log post at {0} (id: {1}, post time: {2})".f(	moment().format("dddd, MMMM Do YYYY, h:mm:ss a"),
-											action.data.target_fullname, 
-											moment(action.data.created_utc * 1000).utc().format("l LTS")));
+			
+			action.data.time = moment().utc(action.data.created_utc * 1000).format("dddd, MMMM Do YYYY, HH:mm:ss");
+			
+			if (templates.actions[action.data.action] === undefined) {
+				action.data.response = JSON.stringify(action.data, null, 4).replace(/^/gm, "    ");
+				
+				return reddit("/api/submit").post({
+					kind: "self", 
+					sr: Config.logSub,
+					text: templates.actions.unknown.post(action.data),
+					title: templates.actions.unknown.title(action.data)
+				}).then(function(){
+					console.log(templates.logs.unknown({
+						currentTime: moment().format("HH:mm:ss"),
+						action: action.data.target_fullname,
+						actionTime: moment(action.data.created_utc * 1000).utc().format("Y/M/D HH:mm:ss")
+					}));
+				})
+				return false;
+			}
+			
+			action.data.target_type = _.startsWith(action.data.target_fullname, "t1") ? "comment" : "submission";
+			
+			return reddit("/api/submit").post({
+				kind: "self", 
+				sr: Config.logSub,
+				text: templates.actions[action.data.action].post(action.data),
+				title: templates.actions[action.data.action].title(action.data)
+			}).then(function(){
+				console.log(templates.logs.post({
+					currentTime: moment().format("HH:mm:ss"),
+					action: action.data.action,
+					actionTime: moment(action.data.created_utc * 1000).utc().format("Y/M/D HH:mm:ss")
+				}));
+			});
 		});
 	});
-});
 }

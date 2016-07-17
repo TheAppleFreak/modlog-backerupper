@@ -1,0 +1,130 @@
+{
+	"actions": {
+		"acceptmoderatorinvite": {
+			"title": "/u/{{mod}} accepted moderator invite on /r/{{subreddit}} ({{action}})"
+		},
+		"addcontributor": {
+			"title": "Added /u/{{user}} as an approved contributor to /r/{{subreddit}} ({{action}})"
+		},
+		"addmoderator": {
+			"title": "Added moderator ({{action}})"
+		},
+		"approvecomment": {
+			"title": "/u/{{mod}} approved comment by /u/{{target_author}} ({{action}})"
+		},
+		"approvelink": {
+			"title": "/u/{{mod}} approved link by /u/{{target_author}} ({{action}})"
+		},
+		"banuser": {
+			"title": "/u/{{mod}} Banned /u/{{target_author}} ({{action}})"
+		},
+		"createrule": {
+			"title": "/u/{{mod}} Created rule `{{details}}` ({{action}})"
+		},
+		"deleterule": {
+			"title": "/u/{{mod}} Deleted rule `{{details}}` ({{action}})"
+		},
+		"distinguish": {
+			"title": "/u/{{mod}} Distinguished {{target_type}} ({{action}})"
+		},
+		"editflair": {
+			"title": "/u/{{mod}} Modified /u/{{target_author}}'s flair ({{action}})"
+		},
+		"editrule": {
+			"title": "/u/{{mod}} edited rule ({{action}})"
+		},
+		"editsettings": {
+			"title": "/u/{{mod}} edited setting `{{details}}` ({{action}})"
+		},
+		"ignorereports": {
+			"title": "/u/{{mod}} ignored reports on /u/{{target_author}}'s {{target_type}} ({{action}})"
+		},
+		"invitemoderator": {
+			"title": "/u/{{mod}} invited /u/{{target_author}} to moderate /r/{{subreddit}} ({{action}})"
+		},
+		"lock": {
+			"title": "/u/{{mod}} locked thread by /u/{{target_author}} ({{action}})"
+		},
+		"marknsfw": {
+			"title": "/u/{{mod}} marked thread by /u/{{target_author}} as NSFW ({{action}})"
+		},
+		"muteuser": {
+			"title": "/u/{{mod}} muted /u/{{target_author}} ({{action}})"
+		},
+		"removecomment": {
+			"title": "/u/{{mod}} removed comment by /u/{{target_author}} ({{action}})"
+		},
+		"removecontributor": {
+			"title": "/u/{{mod}} removed /u/{{target_author}} as an approved submitter ({{action}})"
+		},
+		"removelink": {
+			"title": "/u/{{mod}} removed link by /u/{{target_author}} ({{action}})"
+		},
+		"removemoderator": {
+			"title": "/u/{{mod}} removed /u/{{target_author}} as moderator from /r/{{subreddit}} ({{action}})"
+		},
+		"removewikicontributor": {
+			"title": "/u/{{mod}} removed /u/{{target_author}} as wiki contributor ({{action}})"
+		},
+		"setcontestmode": {
+			"title": "/u/{{mod}} set contest mode ({{action}})"
+		},
+		"setpermissions": {
+			"title": "/u/{{mod}} set /u/{{target_author}}'s moderator permissions ({{action}})"
+		},
+		"setsuggestedsort": {
+			"title": "/u/{{mod}} set suggested sort ({{action}})"
+		},
+		"sticky": {
+			"title": "/u/{{mod}} stickied link ({{action}})"
+		},
+		"unbanuser": {
+			"title": "/u/{{mod}} unbanned /u/{{target_author}} ({{action}})"
+		},
+		"unignorereports": {
+			"title": "/u/{{mod}} unignored reports on /u/{{target_author}}'s {{target_type}} ({{action}})"
+		},
+		"uninvitemoderator": {
+			"title": "/u/{{mod}} revoked /u/{{target_author}}'s invitation to moderate /r/{{subreddit}} ({{action}})"
+		},
+		"unknown": {
+			"title": "Unknown action \"{{action}}\""
+		},
+		"unlock": {
+			"title": "/u/{{mod}} unlocked thread by /u/{{target_author}} ({{action}})"
+		},
+		"unmuteuser": {
+			"title": "/u/{{mod}} unmuted /u/{{target_author}} ({{action}})"
+		},
+		"unsetcontestmode": {
+			"title": "/u/{{mod}} unset contest mode ({{action}})"
+		},
+		"unsticky": {
+			"title": "/u/{{mod}} unstickied link ({{action}})"
+		},
+		"wikibanned": {
+			"title": "/u/{{mod}} banned /u/{{target_author}} from editing /r/{{subreddit}}'s wiki ({{action}})"
+		},
+		"wikicontributor": {
+			"title": "/u/{{mod}} added /u/{{target_author}} as a wiki contributor on /r/{{subreddit}} ({{action}})"
+		},
+		"wikipagelisted": {
+			"title": "/u/{{mod}} listed page on wiki ({{action}})"
+		},
+		"wikipermlevel": {
+			"title": "/u/{{mod}} set /u/{{target_author}}'s wiki contributor permissions ({{action}})"
+		},
+		"wikirevise": {
+			"title": "/u/{{mod}} {{details}} ({{action}})"
+		},
+		"wikiunbanned": {
+			"title": "/u/{{mod}} unbanned /u/{{target_author}} from editing /r/{{subreddit}}'s wiki ({{action}})"
+		}
+	},
+	"logs": {
+		"init": "\nChecking for mod actions starting at {{lastActionTime}} onwards",
+		"check": "\n{{lastActionTime}}: Found {{actionsSince}} new actions",
+		"post": "{{currentTime}}: Logged action \"{{action}}\", action time: {{actionTime}}",
+		"unknown": "WARNING {{currentTime}}: Logged unknown action \"{{action}}\", action time: {{actionTime}}"
+	}
+}
