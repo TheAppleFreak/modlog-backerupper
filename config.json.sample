@@ -7,4 +7,4 @@
 	"watchSub": "SUBREDDIT_TO_LOG",
 	"logSub": "LOG_SUBREDDIT",
 	"checkInterval": NUMBER_OF_SECONDS_BETWEEN_CHECKS
-}
+};
