@@ -17,5 +17,5 @@ Customization
 
 If you want to configure the posts made on the log subreddit, you will have to edit two files, both within the `templates` directory.
 
-* `actionName.hbs` is a [Handlebars](https://github.com/wycats/handlebars.js) file using [Markdown syntax](https://daringfireball.net/projects/markdown/syntax). Most of the variables used in the templates are straight from the response received from Reddit, though for simplicity I insert the `time` and `target_type` attributes (don't rely on `target_type` as it is only accurate for comments and submissions). \
+* `actionName.hbs` is a [Handlebars](https://github.com/wycats/handlebars.js) file using [Markdown syntax](https://daringfireball.net/projects/markdown/syntax). Most of the variables used in the templates are straight from the response received from Reddit, though for simplicity I insert the `time` and `target_type` attributes (don't rely on `target_type` as I only handle it for comments and submissions. All of the other types are currently handled as submissions).
 * `templates.json` contains a listing of all of the action types returnable by Reddit and how their title strings should be formatted. Once again, these are Handlebars strings using Markdown syntax. In the event that Reddit adds another type of event, a generic "unknown" object will be used with a raw dump of the unrecognized JSON data. 
