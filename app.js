@@ -27,9 +27,21 @@ require("babel-polyfill");
 var Config = JSON.parse(_fs2.default.readFileSync(__dirname + "/config.json"));
 var Templates = JSON.parse(_fs2.default.readFileSync(__dirname + "/templates/templates.json"));
 
+var reddit = new _snoocore2.default({
+	userAgent: "(PCMRBot Beta) Mod log backer upper script v0.2, by /u/TheAppleFreak",
+	oauth: {
+		type: "script",
+		key: Config.key,
+		secret: Config.secret,
+		redirectUri: Config.redirectUri,
+		username: Config.username,
+		password: Config.password,
+		scope: ["modlog", "read", "identity", "submit"]
+	}
+});
+
 for (var action in Templates.actions) {
 	Templates.actions[action].post = _handlebars2.default.compile(_fs2.default.readFileSync(__dirname + "/templates/" + action + ".hbs", "utf8"));
-	console.log(__dirname + "/templates/" + action + ".hbs");
 }
 
 for (var _action in Templates.logs) {
@@ -41,7 +53,88 @@ var latestAction = {
 	id: null
 };
 
-// checkModlog();
-// setInterval(checkModlog, Config.checkInterval * 1000);
+main();
+setInterval(main, Config.checkInterval * 1000);
 
-// async function
+function main() {
+	var modActions;
+	return regeneratorRuntime.async(function main$(_context) {
+		while (1) {
+			switch (_context.prev = _context.next) {
+				case 0:
+					console.log("starting...");
+
+					_context.next = 3;
+					return regeneratorRuntime.awrap(getNewActions(Config.watchSub));
+
+				case 3:
+					modActions = _context.sent;
+
+
+					console.log("total actions this update: " + modActions.length);
+
+				case 5:
+				case "end":
+					return _context.stop();
+			}
+		}
+	}, null, this);
+}
+
+function getNewActions(subreddit) {
+	var actions = [];
+	console.log("subreddit: " + subreddit);
+	var i = 1;
+
+	function handleSlice(slice) {
+		if (slice.empty) return actions;
+
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = slice.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var _action2 = _step.value;
+
+				actions = actions.concat(_action2.data);
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		if (latestAction.created_utc != null) {
+			console.log(slice.children.length + " new actions in slice");
+
+			if (actions[0] != undefined && (0, _moment2.default)(actions[0].created_utc * 1000).utc() > latestAction.created_utc) {
+				latestAction.created_utc = (0, _moment2.default)(actions[0].created_utc * 1000).utc();
+				latestAction.id = actions[0].id;
+			}
+		} else {
+			console.log("INITIALIZED LATESTACTION");
+			latestAction.created_utc = (0, _moment2.default)(actions[0].created_utc * 1000).utc();
+			latestAction.id = actions[0].id;
+
+			return actions;
+		}
+
+		return slice.next().then(handleSlice);
+	}
+
+	return new Promise(function (resolve, reject) {
+		return reddit("/r/" + subreddit + "/about/log").listing({ before: latestAction.id }).then(handleSlice).then(function (actions) {
+			resolve(actions);
+		});
+	});
+}
