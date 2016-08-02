@@ -38,3 +38,6 @@ jspm_packages
 
 # config files
 config.json
+
+# compiled mainfile (compile it yourself!)
+app.js

@@ -82,12 +82,11 @@ function main() {
 }
 
 function getNewActions(subreddit) {
-	var actions = [];
-	console.log("subreddit: " + subreddit);
-	var i = 1;
+	var modActions = [];
+	var sliceCount = 2;
 
 	function handleSlice(slice) {
-		if (slice.empty) return actions;
+		if (slice.empty) return modActions;
 
 		var _iteratorNormalCompletion = true;
 		var _didIteratorError = false;
@@ -97,7 +96,7 @@ function getNewActions(subreddit) {
 			for (var _iterator = slice.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				var _action2 = _step.value;
 
-				actions = actions.concat(_action2.data);
+				modActions = modActions.concat(_action2.data);
 			}
 		} catch (err) {
 			_didIteratorError = true;
@@ -117,24 +116,28 @@ function getNewActions(subreddit) {
 		if (latestAction.created_utc != null) {
 			console.log(slice.children.length + " new actions in slice");
 
-			if (actions[0] != undefined && (0, _moment2.default)(actions[0].created_utc * 1000).utc() > latestAction.created_utc) {
-				latestAction.created_utc = (0, _moment2.default)(actions[0].created_utc * 1000).utc();
-				latestAction.id = actions[0].id;
+			if (modActions[0] != undefined && (0, _moment2.default)(modActions[0].created_utc * 1000).utc() > latestAction.created_utc) {
+				latestAction.created_utc = (0, _moment2.default)(modActions[0].created_utc * 1000).utc();
+				latestAction.id = modActions[0].id;
 			}
 		} else {
 			console.log("INITIALIZED LATESTACTION");
-			latestAction.created_utc = (0, _moment2.default)(actions[0].created_utc * 1000).utc();
-			latestAction.id = actions[0].id;
+			latestAction.created_utc = (0, _moment2.default)(modActions[0].created_utc * 1000).utc();
+			latestAction.id = modActions[0].id;
 
-			return actions;
+			return modActions;
 		}
 
-		return slice.next().then(handleSlice);
+		if (slice.children.length < sliceLimit) {
+			return modActions;
+		} else {
+			return slice.next().then(handleSlice);
+		}
 	}
 
 	return new Promise(function (resolve, reject) {
-		return reddit("/r/" + subreddit + "/about/log").listing({ before: latestAction.id }).then(handleSlice).then(function (actions) {
-			resolve(actions);
+		return reddit("/r/" + subreddit + "/about/log").listing({ before: latestAction.id, limit: sliceLimit }).then(handleSlice).then(function (modActions) {
+			resolve(modActions);
 		});
 	});
 }

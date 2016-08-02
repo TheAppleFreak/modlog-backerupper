@@ -6,8 +6,8 @@ import Snoocore from "snoocore";
 import moment from "moment";
 import Handlebars from "handlebars";
 
-var Config = JSON.parse(fs.readFileSync(__dirname + "/config.json"));
-var Templates = JSON.parse(fs.readFileSync(__dirname + "/templates/templates.json"));
+var Config = JSON.parse(fs.readFileSync(`${__dirname}/config.json`));
+var Templates = JSON.parse(fs.readFileSync(`${__dirname}/templates/templates.json`));
 
 var reddit = new Snoocore({
 	userAgent: "(PCMRBot Beta) Mod log backer upper script v0.2, by /u/TheAppleFreak",
@@ -47,40 +47,48 @@ async function main() {
 }
 
 function getNewActions(subreddit) {
-	let actions = [];
-	console.log(`subreddit: ${subreddit}`)
-	let i = 1;
+	let modActions = [];
+	let sliceLimit = 2;
+	let originalActionId = latestAction.id;
 	
 	function handleSlice(slice) {
-		if (slice.empty) return actions;
+		if (slice.empty) return modActions;
 		
 		for (let action of slice.children) {
-			actions = actions.concat(action.data);
+			if (action.data.id != originalActionId) {
+				modActions = modActions.concat(action.data);
+			} else {
+				return modActions;
+			}
 		}
 		
 		if (latestAction.created_utc != null) {
 			console.log(`${slice.children.length} new actions in slice`);
 			
-			if (actions[0] != undefined && moment(actions[0].created_utc * 1000).utc() > latestAction.created_utc) {
-				latestAction.created_utc = moment(actions[0].created_utc * 1000).utc();
-				latestAction.id = actions[0].id;
+			if (modActions[0] != undefined && moment(modActions[0].created_utc * 1000).utc() > latestAction.created_utc) {
+				latestAction.created_utc = moment(modActions[0].created_utc * 1000).utc();
+				latestAction.id = modActions[0].id;
 			}
 		} else {
 			console.log(`INITIALIZED LATESTACTION`);
-			latestAction.created_utc = moment(actions[0].created_utc * 1000).utc();
-			latestAction.id = actions[0].id;
+			latestAction.created_utc = moment(modActions[0].created_utc * 1000).utc();
+			latestAction.id = modActions[0].id;
 			
-			return actions;
+			return modActions;
 		}
 		
-		return slice.next().then(handleSlice);
+		if (slice.children.length < sliceLimit) {
+			return modActions;
+		} else {
+			return slice.next().then(handleSlice);
+		}
 	}
 	
 	return new Promise((resolve, reject) => {
 		return reddit(`/r/${subreddit}/about/log`)
-			.listing({before: latestAction.id})
-			.then(handleSlice).then((actions) => {
-				resolve(actions);
+			.listing({before: latestAction.id, limit: sliceLimit})
+			.then(handleSlice).then((modActions) => {
+				resolve(modActions);
 		});
 	});
 }
