@@ -49,94 +49,126 @@ for (var _action in Templates.logs) {
 }
 
 var latestAction = {
-	created_utc: null,
-	id: null
+	created_utc: (0, _moment2.default)().utc(),
+	id: undefined
 };
 
 main();
 setInterval(main, Config.checkInterval * 1000);
 
 function main() {
-	var modActions;
+	var modActions, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _action2;
+
 	return regeneratorRuntime.async(function main$(_context) {
 		while (1) {
 			switch (_context.prev = _context.next) {
 				case 0:
-					console.log("starting...");
-
-					_context.next = 3;
+					_context.next = 2;
 					return regeneratorRuntime.awrap(getNewActions(Config.watchSub));
 
-				case 3:
+				case 2:
 					modActions = _context.sent;
 
 
-					console.log("total actions this update: " + modActions.length);
+					console.log("total new actions this update: " + modActions.length);
+					_iteratorNormalCompletion = true;
+					_didIteratorError = false;
+					_iteratorError = undefined;
+					_context.prev = 7;
+					for (_iterator = modActions[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						_action2 = _step.value;
 
-				case 5:
+						console.log((0, _moment2.default)(_action2.created_utc * 1000).valueOf(), _action2.id);
+					}
+					_context.next = 15;
+					break;
+
+				case 11:
+					_context.prev = 11;
+					_context.t0 = _context["catch"](7);
+					_didIteratorError = true;
+					_iteratorError = _context.t0;
+
+				case 15:
+					_context.prev = 15;
+					_context.prev = 16;
+
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+
+				case 18:
+					_context.prev = 18;
+
+					if (!_didIteratorError) {
+						_context.next = 21;
+						break;
+					}
+
+					throw _iteratorError;
+
+				case 21:
+					return _context.finish(18);
+
+				case 22:
+					return _context.finish(15);
+
+				case 23:
+					console.log("");
+
+				case 24:
 				case "end":
 					return _context.stop();
 			}
 		}
-	}, null, this);
+	}, null, this, [[7, 11, 15, 23], [16,, 18, 22]]);
 }
 
 function getNewActions(subreddit) {
 	var modActions = [];
-	var sliceCount = 2;
-
-	function handleSlice(slice) {
-		if (slice.empty) return modActions;
-
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = slice.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var _action2 = _step.value;
-
-				modActions = modActions.concat(_action2.data);
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-
-		if (latestAction.created_utc != null) {
-			console.log(slice.children.length + " new actions in slice");
-
-			if (modActions[0] != undefined && (0, _moment2.default)(modActions[0].created_utc * 1000).utc() > latestAction.created_utc) {
-				latestAction.created_utc = (0, _moment2.default)(modActions[0].created_utc * 1000).utc();
-				latestAction.id = modActions[0].id;
-			}
-		} else {
-			console.log("INITIALIZED LATESTACTION");
-			latestAction.created_utc = (0, _moment2.default)(modActions[0].created_utc * 1000).utc();
-			latestAction.id = modActions[0].id;
-
-			return modActions;
-		}
-
-		if (slice.children.length < sliceLimit) {
-			return modActions;
-		} else {
-			return slice.next().then(handleSlice);
-		}
-	}
+	var sliceLimit = 2;
 
 	return new Promise(function (resolve, reject) {
-		return reddit("/r/" + subreddit + "/about/log").listing({ before: latestAction.id, limit: sliceLimit }).then(handleSlice).then(function (modActions) {
+		console.log(latestAction.id);
+
+		return reddit("/r/" + subreddit + "/about/log").listing({ before: latestAction.id, limit: sliceLimit }).then(function (slice) {
+			if (slice.empty) return modActions;
+
+			var _iteratorNormalCompletion2 = true;
+			var _didIteratorError2 = false;
+			var _iteratorError2 = undefined;
+
+			try {
+				for (var _iterator2 = slice.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+					var _action3 = _step2.value;
+
+					modActions = modActions.concat(_action3.data);
+
+					if (latestAction.id === undefined) {
+						latestAction.id = _action3.data.id;
+						latestAction.created_utc = (0, _moment2.default)(_action3.data.created_utc * 1000).utc();
+					} else if ((0, _moment2.default)(_action3.data.created_utc * 1000).utc() >= latestAction.created_utc) {
+						latestAction.id = _action3.data.id;
+						latestAction.created_utc = (0, _moment2.default)(_action3.data.created_utc * 1000).utc();
+					}
+				}
+			} catch (err) {
+				_didIteratorError2 = true;
+				_iteratorError2 = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion2 && _iterator2.return) {
+						_iterator2.return();
+					}
+				} finally {
+					if (_didIteratorError2) {
+						throw _iteratorError2;
+					}
+				}
+			}
+
+			return modActions;
+		}).then(function (modActions) {
 			resolve(modActions);
 		});
 	});

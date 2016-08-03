@@ -31,64 +31,51 @@ for (let action in Templates.logs) {
 }
 
 var latestAction = {
-	created_utc: null,
-	id: null
+	created_utc: moment().utc(),
+	id: undefined
 };
 
 main();
 setInterval(main, Config.checkInterval * 1000);
 
-async function main() {
-	console.log("starting...");
-	
+async function main() {	
 	let modActions = await getNewActions(Config.watchSub);
 	
-	console.log(`total actions this update: ${modActions.length}`);
+	console.log(`total new actions this update: ${modActions.length}`);
+	for (let action of modActions) {
+		console.log(moment(action.created_utc * 1000).valueOf(), action.id);
+	}
+	console.log("");
 }
 
 function getNewActions(subreddit) {
 	let modActions = [];
 	let sliceLimit = 2;
-	let originalActionId = latestAction.id;
-	
-	function handleSlice(slice) {
-		if (slice.empty) return modActions;
-		
-		for (let action of slice.children) {
-			if (action.data.id != originalActionId) {
-				modActions = modActions.concat(action.data);
-			} else {
-				return modActions;
-			}
-		}
-		
-		if (latestAction.created_utc != null) {
-			console.log(`${slice.children.length} new actions in slice`);
-			
-			if (modActions[0] != undefined && moment(modActions[0].created_utc * 1000).utc() > latestAction.created_utc) {
-				latestAction.created_utc = moment(modActions[0].created_utc * 1000).utc();
-				latestAction.id = modActions[0].id;
-			}
-		} else {
-			console.log(`INITIALIZED LATESTACTION`);
-			latestAction.created_utc = moment(modActions[0].created_utc * 1000).utc();
-			latestAction.id = modActions[0].id;
-			
-			return modActions;
-		}
-		
-		if (slice.children.length < sliceLimit) {
-			return modActions;
-		} else {
-			return slice.next().then(handleSlice);
-		}
-	}
 	
 	return new Promise((resolve, reject) => {
+		console.log(latestAction.id);
+		
 		return reddit(`/r/${subreddit}/about/log`)
 			.listing({before: latestAction.id, limit: sliceLimit})
-			.then(handleSlice).then((modActions) => {
+			.then((slice) => {
+				if (slice.empty) return modActions;
+				
+				for (let action of slice.children) {
+					modActions = modActions.concat(action.data);
+					
+					if (latestAction.id === undefined) {
+						latestAction.id = action.data.id;
+						latestAction.created_utc = moment(action.data.created_utc * 1000).utc();
+					} else if (moment(action.data.created_utc * 1000).utc() >= latestAction.created_utc) {
+						latestAction.id = action.data.id;
+						latestAction.created_utc = moment(action.data.created_utc * 1000).utc();
+					}
+				}
+				
+				return modActions;
+			})
+			.then((modActions) => {
 				resolve(modActions);
-		});
+			});
 	});
 }

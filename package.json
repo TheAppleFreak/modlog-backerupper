@@ -1,13 +1,22 @@
 {
-  "name": "babel-test",
-  "version": "1.0.0",
-  "description": "",
+  "name": "modlog-backerupper",
+  "version": "0.2.0",
+  "description": "PCMR mod log backerupper",
   "main": "app.js",
   "scripts": {
-    "build": "babel src --watch -o app.js"
+    "build": "babel src -o app.js",
+	"launch": "babel src -o app.js && node app.js"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheAppleFreak/modlog-backerupper.git"
+  },
+  "author": "TheAppleFreak",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/TheAppleFreak/modlog-backerupper/issues"
+  },
+  "homepage": "https://github.com/TheAppleFreak/modlog-backerupper#readme",
   "dependencies": {
     "babel-plugin-syntax-async-functions": "^6.8.0",
     "babel-plugin-transform-async-to-module-method": "^6.8.0",
